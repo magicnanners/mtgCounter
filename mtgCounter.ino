@@ -36,9 +36,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Define pins
 #define BUTTON_ROW_PIN 2
-#define BUTTON_COL_PIN 3
-#define BUTTON_DOWN_PIN 4
+#define BUTTON_LEFT_PIN 3
+#define BUTTON_RIGHT_PIN 4
+#define BUTTON_DOWN_PIN 6
 #define BUTTON_UP_PIN 5
+
 
 //End Defintitions
 
@@ -46,7 +48,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Booleans for debounce
 bool buttonRowClicked = false;
-bool buttonColClicked = false;
+bool buttonLeftClicked = false;
+bool buttonRightClicked = false;
 bool buttonDownClicked = false;
 bool buttonUpClicked = false;
 
@@ -321,7 +324,8 @@ void setup() {
 
   //Setup buttons
   pinMode(BUTTON_ROW_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_COL_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
   pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
 
@@ -394,18 +398,31 @@ void loop(){
  {
    buttonRowClicked = false;
  }
- if((digitalRead(BUTTON_COL_PIN) == LOW) && (buttonColClicked == false))
+ if((digitalRead(BUTTON_LEFT_PIN) == LOW) && (buttonLeftClicked == false))
  { 
-   buttonColClicked = true;
-   currentCol++;
-   if(currentCol > maxCol)
-   {currentCol =0;}
+   buttonLeftClicked = true;
+   currentCol--;
+   if(currentCol < 0)
+   {currentCol = maxCol;}
    updateSelection();
    
  }
- if((digitalRead(BUTTON_COL_PIN) == HIGH) && (buttonColClicked == true))
+ if((digitalRead(BUTTON_LEFT_PIN) == HIGH) && (buttonLeftClicked == true))
  {
-   buttonColClicked = false;
+   buttonLeftClicked = false;
+ }
+ if((digitalRead(BUTTON_RIGHT_PIN) == LOW) && (buttonRightClicked == false))
+ { 
+   buttonRightClicked = true;
+   currentCol++;
+   if(currentCol > maxCol)
+   {currentCol = 0;}
+   updateSelection();
+   
+ }
+ if((digitalRead(BUTTON_RIGHT_PIN) == HIGH) && (buttonRightClicked == true))
+ {
+   buttonRightClicked = false;
  }
 
 //Update display at end of main loop
