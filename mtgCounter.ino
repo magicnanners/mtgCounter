@@ -387,9 +387,6 @@ void setup() {
   // Show loading screen
   displayLoadingScreen();
   delay(1000); // Pause for 1 second
-
-  // Clear the buffer
-  updateDisplay();
 }
 
 void loop(){
