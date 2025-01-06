@@ -9,7 +9,6 @@
   -Add menu to select game parameters
   -Have game reset after game over
   -Tidy up UI implementation and make it cleaner
-  -Add additional button to cycle current column left instead of just right
   -Add functionality to the MTG Logo as it currently does nothing. Plan to add secrets and such
   -Implement selection highlight flashing if possible
     Perhaps using time since on and time since off rather than standard delay?
@@ -61,6 +60,8 @@ int poisonDmg;
 int c2Dmg;
 int c3Dmg;
 int c4Dmg;
+
+int testInt;
 
 //Setup variables for menu
 int currentRow = 0;
