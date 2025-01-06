@@ -188,6 +188,17 @@ void displayGameOver()
   display.display();
 }
 
+void displayLoadingScreen()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(48, 0);
+  display.print("Now");
+  display.setCursor(26, 16);
+  display.print("Loading");
+  display.display();
+}
 
 //Function to update the screen
 void updateDisplay()
@@ -373,13 +384,11 @@ void setup() {
     for(;;); // Don't proceed, loop forever
   }
   
-  // Show initial display buffer contents on the screen --
-  // the library initializes this with an Adafruit splash screen.
-  display.display();
-  delay(2000); // Pause for 2 seconds
+  // Show loading screen
+  displayLoadingScreen();
+  delay(1000); // Pause for 1 second
 
   // Clear the buffer
-  display.clearDisplay();
   updateDisplay();
 }
 
