@@ -61,8 +61,6 @@ int c2Dmg;
 int c3Dmg;
 int c4Dmg;
 
-int testInt;
-
 //Setup variables for menu
 int currentRow = 0;
 int currentCol = 0;
@@ -267,7 +265,15 @@ void updateValue(int currentSelection, bool increase)
     else
     {
       c2Dmg--;
-      playerLife++;
+      if(c2Dmg < 0)
+      {
+        c2Dmg = 0;
+      }
+      else 
+      {
+        playerLife++;
+      }
+      
     }
   }
   else if(currentSelection ==2)
@@ -281,7 +287,15 @@ void updateValue(int currentSelection, bool increase)
     else
     {
       c3Dmg--;
-      playerLife++;
+      if(c3Dmg < 0)
+      {
+        c3Dmg = 0;
+      }
+      else 
+      {
+        playerLife++;
+      }
+      
     }
   }
   else if(currentSelection == 3)
@@ -295,7 +309,15 @@ void updateValue(int currentSelection, bool increase)
     else
     {
       c4Dmg--;
-      playerLife++;
+      if(c4Dmg < 0)
+      {
+        c4Dmg = 0;
+      }
+      else 
+      {
+        playerLife++;
+      }
+      
     }
   }
   else if(currentSelection == 4)
@@ -313,7 +335,13 @@ void updateValue(int currentSelection, bool increase)
     else
     {
       poisonDmg--;
+      if(poisonDmg < 0)
+      {
+        poisonDmg = 0;
+      }
+      else {
       playerLife++;
+      }
     }
   } 
 }
