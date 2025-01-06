@@ -339,8 +339,9 @@ void updateValue(int currentSelection, bool increase)
       {
         poisonDmg = 0;
       }
-      else {
-      playerLife++;
+      else 
+      {
+        playerLife++;
       }
     }
   } 
