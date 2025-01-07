@@ -5,6 +5,9 @@
   -Basic functionality impltemented
   -Basic display functions implemented
 
+  Version 1.1:
+  -Added support for 6  input buttons to prep for PCB & expanded menus
+
   TODO:
   -Add menu to select game parameters
   -Have game reset after game over
@@ -69,6 +72,8 @@ int currentCol = 0;
 int currentSelection = 0;
 int maxRow = 1;
 int maxCol = 2;
+
+int gameState = 0;
 
 //Boolean for determining game over
 bool isGameOver()
@@ -366,7 +371,8 @@ void setup() {
     Serial.begin(9600);
 
   //Setup buttons
-  pinMode(BUTTON_ROW_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_INC_PIN, INPUT_PULLUP);
@@ -401,9 +407,9 @@ void loop(){
    updateValue(currentSelection, true);
  }
 
- if((digitalRead(BUTTON_INC_PIN) == HIGH) && (buttonIntClicked == true))
+ if((digitalRead(BUTTON_INC_PIN) == HIGH) && (buttonIncClicked == true))
  {
-   buttonIntClicked = false;
+   buttonIncClicked = false;
  }
 
 //If down button pressed
