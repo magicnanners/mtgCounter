@@ -57,8 +57,6 @@ bool buttonRightClicked = false;
 bool buttonDecClicked = false;
 bool buttonIncClicked = false;
 
-//Delay time for flashing indicator of what item is selected. Not implemented
-int highlightDelay = 300;
 //Variables to track damages
 int playerLife;
 int poisonDmg;
@@ -73,7 +71,23 @@ int currentSelection = 0;
 int maxRow = 1;
 int maxCol = 2;
 
+/*
+  This tracks the current game state. 
+  0 = Loading screen
+  1 = Setup menu - NOT IMPLEMENTED
+  2 = Standard state
+  3 = Game Over
+*/
 int gameState = 0;
+
+unsigned long previousMillis = 0;
+unsigned long startMillis;
+unsigned long currentMillis;
+
+//Milliseconds to delay
+const long interval = 1000;
+
+bool showHighlight = true;
 
 //Boolean for determining game over
 bool isGameOver()
@@ -181,7 +195,12 @@ void displayMainGame()
       display.setCursor(75,18);
       display.print(poisonDmg);
       display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
-      updateHighlight();
+      currentMillis = millis();
+      if (currentMillis - startMillis >= interval)
+      {
+        updateHighlight();
+        startMillis = currentMillis;
+      }
       display.display();
 }
 //Display game over screen
@@ -224,7 +243,6 @@ void updateDisplay()
 //Logic for displaying the correct highlightBox
 void updateHighlight ()
 {
-  
   if (currentSelection == 0)
   {
     //Highlight player life
@@ -385,7 +403,6 @@ void setup() {
   c3Dmg = 0;
   c4Dmg = 0;
 
-
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -395,6 +412,9 @@ void setup() {
   // Show loading screen
   displayLoadingScreen();
   delay(1000); // Pause for 1 second
+  startMillis = millis();
+  Serial.println(F("Start Millis:"));
+  Serial.println(startMillis);
 }
 
 void loop(){
@@ -487,5 +507,6 @@ void loop(){
 
 //Update display at end of main loop
 updateDisplay();
+//updateHighlight();
 
 }
