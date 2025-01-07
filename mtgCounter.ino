@@ -34,11 +34,12 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Define pins
-#define BUTTON_ROW_PIN 2
+#define BUTTON_DOWN_PIN 2
+#define BUTTON_UP_PIN 7
 #define BUTTON_LEFT_PIN 3
 #define BUTTON_RIGHT_PIN 4
-#define BUTTON_DOWN_PIN 6
-#define BUTTON_UP_PIN 5
+#define BUTTON_DEC_PIN 6
+#define BUTTON_INC_PIN 5
 
 
 //End Defintitions
@@ -46,11 +47,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 //Begin Variables
 
 //Booleans for debounce
-bool buttonRowClicked = false;
-bool buttonLeftClicked = false;
-bool buttonRightClicked = false;
 bool buttonDownClicked = false;
 bool buttonUpClicked = false;
+bool buttonLeftClicked = false;
+bool buttonRightClicked = false;
+bool buttonDecClicked = false;
+bool buttonIncClicked = false;
 
 //Delay time for flashing indicator of what item is selected. Not implemented
 int highlightDelay = 300;
@@ -367,8 +369,8 @@ void setup() {
   pinMode(BUTTON_ROW_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_INC_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_DEC_PIN, INPUT_PULLUP);
 
   //Set initial values for damage and life
   playerLife = 40;
@@ -392,36 +394,36 @@ void setup() {
 void loop(){
   // put your main code here, to run repeatedly
   
-  //If up button pressed
- if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
+  //If Increase button pressed
+ if((digitalRead(BUTTON_INC_PIN) == LOW) && (buttonIncClicked == false))
  {
-   buttonUpClicked = true;
+   buttonIncClicked = true;
    updateValue(currentSelection, true);
  }
 
- if((digitalRead(BUTTON_UP_PIN) == HIGH) && (buttonUpClicked == true))
+ if((digitalRead(BUTTON_INC_PIN) == HIGH) && (buttonIntClicked == true))
  {
-   buttonUpClicked = false;
+   buttonIntClicked = false;
  }
 
 //If down button pressed
- if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
+ if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
  {
-   buttonDownClicked = true;
+   buttonDecClicked = true;
    updateValue(currentSelection, false);
    
  }
 
- if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
+ if((digitalRead(BUTTON_DEC_PIN) == HIGH) && (buttonDecClicked == true))
  {
-   buttonDownClicked = false;
+   buttonDecClicked = false;
 
  }
 
-  //If row button pressed
- if((digitalRead(BUTTON_ROW_PIN) == LOW) && (buttonRowClicked == false))
+  //If Down button pressed
+ if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
  {
-   buttonRowClicked = true;
+   buttonDownClicked = true;
    //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
    if(currentRow == 0)
    {currentRow = 1;}
@@ -430,9 +432,25 @@ void loop(){
    updateSelection();
  }
 
- if((digitalRead(BUTTON_ROW_PIN) == HIGH) && (buttonRowClicked == true))
+ if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
  {
-   buttonRowClicked = false;
+   buttonDownClicked = false;
+ }
+ //If Up button pressed
+ if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
+ {
+   buttonUpClicked = true;
+   //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
+   if(currentRow == 0)
+   {currentRow = 1;}
+   else if (currentRow == 1)
+   {currentRow = 0;}
+   updateSelection();
+ }
+
+ if((digitalRead(BUTTON_UP_PIN) == HIGH) && (buttonUpClicked == true))
+ {
+   buttonUpClicked = false;
  }
  if((digitalRead(BUTTON_LEFT_PIN) == LOW) && (buttonLeftClicked == false))
  { 
