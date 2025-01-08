@@ -7,14 +7,13 @@
 
   Version 1.1:
   -Added support for 6  input buttons to prep for PCB & expanded menus
+  -Implemented highlighted selection blinking!
 
   TODO:
   -Add menu to select game parameters
   -Have game reset after game over
   -Tidy up UI implementation and make it cleaner
   -Add functionality to the MTG Logo as it currently does nothing. Plan to add secrets and such
-  -Implement selection highlight flashing if possible
-    Perhaps using time since on and time since off rather than standard delay?
   -Cleanup code and documentation
 */
 
@@ -80,14 +79,10 @@ int maxCol = 2;
 */
 int gameState = 0;
 
-unsigned long previousMillis = 0;
+//Variables for highlight blinking
 unsigned long startMillis;
 unsigned long currentMillis;
-
-//Milliseconds to delay
-const long interval = 1000;
-
-bool showHighlight = true;
+const long interval = 300;
 
 //Boolean for determining game over
 bool isGameOver()
@@ -196,9 +191,12 @@ void displayMainGame()
       display.print(poisonDmg);
       display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
       currentMillis = millis();
-      if (currentMillis - startMillis >= interval)
+      if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
       {
         updateHighlight();
+      }
+      else if (currentMillis - startMillis > (interval * 2))
+      {
         startMillis = currentMillis;
       }
       display.display();
