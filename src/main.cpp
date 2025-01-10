@@ -22,6 +22,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "avr8-stub.h"
+#include "app_api.h"
 
 //Begin Definitions
 
@@ -144,11 +146,13 @@ void updateValue(int currentSelection, bool increase);
 
 
 void setup() {
+
+  debug_init();
   
   // Intialize serial
-    Serial.begin(9600);
-    Serial.println(F("Begin program"));
-    Serial.println(millis());
+   // Serial.begin(9600);
+   // Serial.println(F("Begin program"));
+   // Serial.println(millis());
 
   //Setup buttons
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
@@ -167,7 +171,7 @@ void setup() {
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
+    //Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
   // Show loading screen
@@ -187,7 +191,7 @@ void loop()
    buttonIncClicked = true;
    if(debugActive == true)
    {
-    Serial.println(F("Button Inc State"));
+    //Serial.println(F("Button Inc State"));
    }
 
    if(gameState == 2)
@@ -213,6 +217,7 @@ void loop()
  if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
  {
    buttonDecClicked = true;
+   /*
    if(debugActive == true)
    {
       Serial.println(F("Button Dec State:"));
@@ -232,13 +237,15 @@ void loop()
    {
     changeState(2);
    }
-   //updateValue(currentSelection, false);
+   */
+   updateValue(currentSelection, false);
    
  }
 
  if((digitalRead(BUTTON_DEC_PIN) == HIGH) && (buttonDecClicked == true))
  {
    buttonDecClicked = false;
+   /*
    if(debugActive == true)
    {
     Serial.println(F("Button Dec State:"));
@@ -246,6 +253,7 @@ void loop()
     Serial.println(F("Button Down State:"));
     Serial.println(buttonDownClicked);
    }
+   */
 
  }
 
@@ -253,11 +261,13 @@ void loop()
  if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
  {
    buttonDownClicked = true;
+   /*
    if(debugActive == true)
    {
     Serial.println(F("Button Down State:"));
     Serial.println(buttonDownClicked);
    }
+   */
    //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
    if(currentRow == 0)
    {currentRow = 1;}
@@ -269,11 +279,13 @@ void loop()
  if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
  {
    buttonDownClicked = false;
+   /*
    if(debugActive == true)
    {
     Serial.println(F("Button Down State:"));
     Serial.println(buttonDownClicked);
    }
+   */
  }
  //If Up button pressed
  if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
@@ -332,22 +344,21 @@ updateDisplay();
 void changeState(int state)
 {
   gameState = state;
-  //If on setup screen
+  //If changing to setup screen
   if (gameState == 1)
   {
     maxRow = 2;
     maxCol = 0;
-    if(debugActive == true)
-    {
-      Serial.println(F("maxRow: "));
-      Serial.print(maxRow);
-    }
+    currentCol = 0;
+    currentRow = 0;
   }
-  //If on main game
+  //If changing to main game
   if (gameState == 2)
   {
     maxRow = 1;
     maxCol = 2;
+    currentCol = 0;
+    currentRow = 0;
     playerLife = startingLife;
     c2Dmg = 0;
     c3Dmg = 0;
@@ -376,11 +387,13 @@ void updateSelection()
     {
       currentSelection = 1;
     }
+    /*
     if(debugActive == true)
     {
       Serial.println(F("Current Selection:"));
       Serial.println(currentSelection);
     }
+    */
   }
 
 
@@ -594,7 +607,10 @@ void updateValue(int currentSelection, bool increase)
           startingLife = 1;
         }
       }
-
+    }
+    else if (currentSelection == 1)
+    {
+      changeState(2);
     }
   }
 
