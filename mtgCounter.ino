@@ -5,13 +5,15 @@
   -Basic functionality impltemented
   -Basic display functions implemented
 
+  Version 1.1:
+  -Added support for 6  input buttons to prep for PCB & expanded menus
+  -Implemented highlighted selection blinking!
+
   TODO:
   -Add menu to select game parameters
   -Have game reset after game over
   -Tidy up UI implementation and make it cleaner
   -Add functionality to the MTG Logo as it currently does nothing. Plan to add secrets and such
-  -Implement selection highlight flashing if possible
-    Perhaps using time since on and time since off rather than standard delay?
   -Cleanup code and documentation
 */
 
@@ -34,11 +36,12 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Define pins
-#define BUTTON_ROW_PIN 2
+#define BUTTON_DOWN_PIN 2
+#define BUTTON_UP_PIN 7
 #define BUTTON_LEFT_PIN 3
 #define BUTTON_RIGHT_PIN 4
-#define BUTTON_DOWN_PIN 6
-#define BUTTON_UP_PIN 5
+#define BUTTON_DEC_PIN 6
+#define BUTTON_INC_PIN 5
 
 
 //End Defintitions
@@ -46,14 +49,13 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 //Begin Variables
 
 //Booleans for debounce
-bool buttonRowClicked = false;
-bool buttonLeftClicked = false;
-bool buttonRightClicked = false;
 bool buttonDownClicked = false;
 bool buttonUpClicked = false;
+bool buttonLeftClicked = false;
+bool buttonRightClicked = false;
+bool buttonDecClicked = false;
+bool buttonIncClicked = false;
 
-//Delay time for flashing indicator of what item is selected. Not implemented
-int highlightDelay = 300;
 //Variables to track damages
 int playerLife;
 int poisonDmg;
@@ -61,12 +63,29 @@ int c2Dmg;
 int c3Dmg;
 int c4Dmg;
 
+int numPlayers = 4;
+int startingLife = 40;
+
 //Setup variables for menu
 int currentRow = 0;
 int currentCol = 0;
 int currentSelection = 0;
-int maxRow = 1;
-int maxCol = 2;
+int maxRow;
+int maxCol;
+
+/*
+  This tracks the current game state. 
+  0 = Loading screen
+  1 = Setup menu - NOT IMPLEMENTED
+  2 = Standard state
+  3 = Game Over
+*/
+int gameState = 0;
+
+//Variables for highlight blinking
+unsigned long startMillis;
+unsigned long currentMillis;
+const long interval = 300;
 
 //Boolean for determining game over
 bool isGameOver()
@@ -108,42 +127,243 @@ const unsigned char bitmap_MTGLogo [] PROGMEM = {
 
 // End Bitmaps
 
+void setup() {
+  
+  // Intialize serial
+    Serial.begin(9600);
+
+  //Setup buttons
+  pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_INC_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_DEC_PIN, INPUT_PULLUP);
+  gameState = 0;
+  //Set initial values for damage and life
+  playerLife = 40;
+  poisonDmg = 0;
+  c2Dmg = 0;
+  c3Dmg = 0;
+  c4Dmg = 0;
+
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  
+  // Show loading screen
+  displayLoadingScreen();
+  delay(1000); // Pause for 1 second
+  startMillis = millis();
+  changeState(1);
+}
+
+void loop()
+{
+  // put your main code here, to run repeatedly
+  
+  //If Increase button pressed
+ if((digitalRead(BUTTON_INC_PIN) == LOW) && (buttonIncClicked == false))
+ {
+   buttonIncClicked = true;
+   if(gameState == 2)
+   {
+    updateValue(currentSelection, true);
+   }
+   else if(gameState == 1 && currentSelection == 0)
+   {
+    updateValue(currentSelection, true);
+   }
+   else if(gameState == 1 && currentSelection == 1)
+   {
+    changeState(2);
+   }
+ }
+
+ if((digitalRead(BUTTON_INC_PIN) == HIGH) && (buttonIncClicked == true))
+ {
+   buttonIncClicked = false;
+ }
+
+//If down button pressed
+ if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
+ {
+   buttonDecClicked = true;
+   if(gameState == 2)
+   {
+    updateValue(currentSelection, false);
+   }
+   else if(gameState == 1 && currentSelection == 0)
+   {
+    updateValue(currentSelection, false);
+   }
+   else if(gameState == 1 && currentSelection == 1)
+   {
+    changeState(2);
+   }
+   //updateValue(currentSelection, false);
+   
+ }
+
+ if((digitalRead(BUTTON_DEC_PIN) == HIGH) && (buttonDecClicked == true))
+ {
+   buttonDecClicked = false;
+
+ }
+
+  //If Down button pressed
+ if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
+ {
+   buttonDownClicked = true;
+   //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
+   if(currentRow == 0)
+   {currentRow = 1;}
+   else if (currentRow == 1)
+   {currentRow = 0;}
+   updateSelection();
+ }
+
+ if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
+ {
+   buttonDownClicked = false;
+ }
+ //If Up button pressed
+ if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
+ {
+   buttonUpClicked = true;
+   //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
+  if(currentRow == 0)
+  {currentRow = 1;}
+  else if (currentRow == 1)
+  {currentRow = 0;}
+  updateSelection();
+ }
+
+ if((digitalRead(BUTTON_UP_PIN) == HIGH) && (buttonUpClicked == true))
+ {
+   buttonUpClicked = false;
+ }
+ if((digitalRead(BUTTON_LEFT_PIN) == LOW) && (buttonLeftClicked == false))
+ { 
+  if(gameState ==2)
+  {
+   buttonLeftClicked = true;
+   currentCol--;
+   if(currentCol < 0)
+   {currentCol = maxCol;}
+   updateSelection();
+  }
+ }
+ if((digitalRead(BUTTON_LEFT_PIN) == HIGH) && (buttonLeftClicked == true))
+ {
+   buttonLeftClicked = false;
+ }
+ if((digitalRead(BUTTON_RIGHT_PIN) == LOW) && (buttonRightClicked == false))
+ { 
+  if(gameState == 2)
+  {
+   buttonRightClicked = true;
+   currentCol++;
+   if(currentCol > maxCol)
+   {currentCol = 0;}
+   updateSelection();
+  }
+
+   
+ }
+ if((digitalRead(BUTTON_RIGHT_PIN) == HIGH) && (buttonRightClicked == true))
+ {
+   buttonRightClicked = false;
+ }
+
+//Update display at end of main loop
+updateDisplay();
+
+}
+
+void changeState(int state)
+{
+  gameState = state;
+  //If on setup screen
+  if (gameState == 1)
+  {
+    maxRow = 2;
+    maxCol = 0;
+    Serial.println(F("maxRow: "));
+    Serial.print(maxRow);
+  }
+  //If on main game
+  if (gameState == 2)
+  {
+    maxRow = 1;
+    maxCol = 2;
+    playerLife = startingLife;
+    c2Dmg = 0;
+    c3Dmg = 0;
+    c4Dmg = 0;
+    poisonDmg = 0;
+    currentSelection = 0;
+    updateDisplay();
+    //delay(300);
+  }
+}
 
 void updateSelection()
 {
   //A Way to update current selection via columns and rows
   //There is likely a smarter way to achieve this but this works for now.
   //You're welcome to try and improve it, I just wanted to get this done haha.
-  if (currentRow == 0 && currentCol == 0)
+
+  if (gameState == 1)
   {
-    //Set current selection to player life
-    currentSelection = 0;
+    if(currentRow == 0)
+    {
+      currentSelection = 0;
+    }
+    else if (currentRow == 1)
+    {
+      currentSelection = 1;
+    }
+    Serial.println(F("Current Selection:"));
+    Serial.println(currentSelection);
   }
-  else if(currentRow == 1 && currentCol == 0)
+
+
+  if(gameState == 2)
   {
-    //Set current selection to Commander 2 Damage
-    currentSelection = 1;
-  }
- 
-  else if(currentRow == 1 && currentCol == 1)
-  {
-    //Set current selection to Commander 3 Damage
-    currentSelection = 2;
-  }
-  else if(currentRow == 1 && currentCol == 2)
-  {
-    //Set current selection to Commander 4 Damage
-    currentSelection = 3;
-  }
-  else if(currentRow == 0 && currentCol == 2)
-  {
-    //Set current selection to MTG Logo
-    currentSelection = 4;
-  }
-  else if(currentRow == 0 && currentCol == 1)
-  {
-    //Set Current Selection to Poison Damage
-    currentSelection = 5;
+    if (currentRow == 0 && currentCol == 0)
+    {
+      //Set current selection to # players if in setup and player life if main game    
+      currentSelection = 0;
+    }
+    else if(currentRow == 1 && currentCol == 0)
+    {
+      //Set current selection to starting life if in setup and Commander 2 Damage if in main game
+      currentSelection = 1;
+    }
+
+    else if(currentRow == 1 && currentCol == 1)
+    {
+      //Set current selection to confirm if in setup menu and Commander 3 Damage if in main game
+      currentSelection = 2;
+    }
+    else if(currentRow == 1 && currentCol == 2)
+    {
+      //Set current selection to Commander 4 Damage
+      currentSelection = 3;
+    }
+    else if(currentRow == 0 && currentCol == 2)
+    {
+      //Set current selection to MTG Logo
+      currentSelection = 4;
+    }
+    else if(currentRow == 0 && currentCol == 1)
+    {
+      //Set Current Selection to Poison Damage
+      currentSelection = 5;
+    }
   }
 }
 
@@ -174,7 +394,15 @@ void displayMainGame()
       display.setCursor(75,18);
       display.print(poisonDmg);
       display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
-      updateHighlight();
+      currentMillis = millis();
+      if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
+      {
+        updateHighlight();
+      }
+      else if (currentMillis - startMillis > (interval * 2))
+      {
+        startMillis = currentMillis;
+      }
       display.display();
 }
 //Display game over screen
@@ -200,16 +428,46 @@ void displayLoadingScreen()
   display.display();
 }
 
+void displaySetupScreen()
+{
+  display.clearDisplay();
+  display.setTextSize(1.5);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(2, 2);
+  display.print("# Of Players: ");
+  display.print(numPlayers);
+  display.setCursor(2, 11);
+  display.print("Starting Life: ");
+  display.print(startingLife);
+  display.setCursor(2, 19);
+  display.print("Confirm");
+  currentMillis = millis();
+  if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
+  {
+    updateHighlight();
+  }
+  else if (currentMillis - startMillis > (interval * 2))
+  {
+    startMillis = currentMillis;
+  }
+  display.display();
+}
+
 //Function to update the screen
 void updateDisplay()
 {
-  if (isGameOver() == false)
+  if (gameState == 1)
+  {
+    displaySetupScreen();
+  }
+  if (gameState == 2)
   {
     displayMainGame();
   }
-  else if (isGameOver() == true)
+  if (isGameOver() == true)
   {
     delay(400);
+    gameState = 3;
     displayGameOver();
   }
 }
@@ -218,250 +476,188 @@ void updateDisplay()
 void updateHighlight ()
 {
   
-  if (currentSelection == 0)
+  //If on setup screen
+  if (gameState == 1)
   {
-    //Highlight player life
-    display.drawRect(0,16,45,16,SSD1306_WHITE);
+      if (currentSelection == 0)
+      {
+        display.drawRect(0, 0, 110, 8, SSD1306_WHITE);
+      }
+      if ( currentSelection == 1)
+      {
+        display.drawRect(0,8,110,8, SSD1306_WHITE);
+      }
+      if (currentSelection == 2) 
+      {
+        display.drawRect(0,16,50,8, SSD1306_WHITE);
+        Serial.println(F("Highlighted continue button"));
+      }
   }
-  else if(currentSelection == 1)
+
+  //If on main game screen
+  if (gameState == 2)
   {
-    //Highlight Commander 2 Damage
-    display.drawRect(0,0,40,10,SSD1306_WHITE);
-  }
-  else if(currentSelection == 2)
-  {
-    //Highlight Commander 3 Damage
-    display.drawRect(45,0,40,10,SSD1306_WHITE);
-  }
-  else if(currentSelection == 3)
-  {
-    //Highlight Commander 4 Damage
-    display.drawRect(85,0,40,10,SSD1306_WHITE);
-  }
-  else if(currentSelection == 4)
-  {
-    //Highlight MTG Logo
-    display.drawRect(100,16,16,16,SSD1306_WHITE);
-  }
-  else if(currentSelection == 5)
-  {
-    //Highlight Poison Damage
-    display.drawRect(55,16,40,16,SSD1306_WHITE);
+    if (currentSelection == 0)
+    {
+      //Highlight player life
+      display.drawRect(0,16,45,16,SSD1306_WHITE);
+    }
+    else if(currentSelection == 1)
+    {
+      //Highlight Commander 2 Damage
+      display.drawRect(0,0,40,10,SSD1306_WHITE);
+    }
+    else if(currentSelection == 2)
+    {
+      //Highlight Commander 3 Damage
+      display.drawRect(45,0,40,10,SSD1306_WHITE);
+    }
+    else if(currentSelection == 3)
+    {
+      //Highlight Commander 4 Damage
+      display.drawRect(85,0,40,10,SSD1306_WHITE);
+    }
+    else if(currentSelection == 4)
+    {
+      //Highlight MTG Logo
+      display.drawRect(100,16,16,16,SSD1306_WHITE);
+    }
+    else if(currentSelection == 5)
+    {
+      //Highlight Poison Damage
+      display.drawRect(55,16,40,16,SSD1306_WHITE);
+    }
   }
 }
 
 //Logic for updating the correct value based on selection and 
 void updateValue(int currentSelection, bool increase)
-{
-  if (currentSelection == 0)
+{ 
+  if (gameState == 1)
   {
-    //Update Player Life
-    if(increase == true)
+    if(currentSelection == 0)
     {
-      playerLife++;
-    }
-    else
-    {
-      playerLife--;
-    }
-  }
-  else if(currentSelection == 1)
-  {
-    //Update Commander 2 Damage
-    if(increase == true)
-    {
-      c2Dmg++;
-      playerLife--;
-    }
-    else
-    {
-      c2Dmg--;
-      if(c2Dmg < 0)
+      if(increase == true)
       {
-        c2Dmg = 0;
+        startingLife++;
       }
       else 
       {
-        playerLife++;
+        startingLife--;
+        if(startingLife < 1)
+        {
+          startingLife = 1;
+        }
       }
-      
+
     }
   }
-  else if(currentSelection ==2)
+
+  if(gameState == 2)
   {
-    //Update Commander 3 Damage
-    if(increase == true)
+    if (currentSelection == 0)
     {
-      c3Dmg++;
-      playerLife--;
-    }
-    else
-    {
-      c3Dmg--;
-      if(c3Dmg < 0)
-      {
-        c3Dmg = 0;
-      }
-      else 
+      //Update Player Life
+      if(increase == true)
       {
         playerLife++;
       }
-      
-    }
-  }
-  else if(currentSelection == 3)
-  {
-    //Update Commander 4 Damage
-    if(increase == true)
-    {
-      c4Dmg++;
-      playerLife--;
-    }
-    else
-    {
-      c4Dmg--;
-      if(c4Dmg < 0)
+      else
       {
-        c4Dmg = 0;
+        playerLife--;
       }
-      else 
-      {
-        playerLife++;
-      }
-      
     }
-  }
-  else if(currentSelection == 4)
-  {
-    //Do nothing... for now ;)
-  }
-  else if(currentSelection == 5)
-  {
-    //Update Poison Damage
-    if(increase == true)
+    else if(currentSelection == 1)
     {
-      poisonDmg++;
-      playerLife--;
-    }
-    else
-    {
-      poisonDmg--;
-      if(poisonDmg < 0)
+      //Update Commander 2 Damage
+      if(increase == true)
       {
-        poisonDmg = 0;
+        c2Dmg++;
+        playerLife--;
       }
-      else 
+      else
       {
-        playerLife++;
+        c2Dmg--;
+        if(c2Dmg < 0)
+        {
+          c2Dmg = 0;
+        }
+        else 
+        {
+          playerLife++;
+        }
+        
+      }
+    }
+    else if(currentSelection ==2)
+    {
+      //Update Commander 3 Damage
+      if(increase == true)
+      {
+        c3Dmg++;
+        playerLife--;
+      }
+      else
+      {
+        c3Dmg--;
+        if(c3Dmg < 0)
+        {
+          c3Dmg = 0;
+        }
+        else 
+        {
+          playerLife++;
+        }
+        
+      }
+    }
+    else if(currentSelection == 3)
+    {
+      //Update Commander 4 Damage
+      if(increase == true)
+      {
+        c4Dmg++;
+        playerLife--;
+      }
+      else
+      {
+        c4Dmg--;
+        if(c4Dmg < 0)
+        {
+          c4Dmg = 0;
+        }
+        else 
+        {
+          playerLife++;
+        }
+        
+      }
+    }
+    else if(currentSelection == 4)
+    {
+      //Do nothing... for now ;)
+    }
+    else if(currentSelection == 5)
+    {
+      //Update Poison Damage
+      if(increase == true)
+      {
+        poisonDmg++;
+        playerLife--;
+      }
+      else
+      {
+        poisonDmg--;
+        if(poisonDmg < 0)
+        {
+          poisonDmg = 0;
+        }
+        else 
+        {
+          playerLife++;
+        }
       }
     }
   } 
 }
 
-void setup() {
-  
-  // Intialize serial
-    Serial.begin(9600);
-
-  //Setup buttons
-  pinMode(BUTTON_ROW_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
-
-  //Set initial values for damage and life
-  playerLife = 40;
-  poisonDmg = 0;
-  c2Dmg = 0;
-  c3Dmg = 0;
-  c4Dmg = 0;
-
-
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  
-  // Show loading screen
-  displayLoadingScreen();
-  delay(1000); // Pause for 1 second
-}
-
-void loop(){
-  // put your main code here, to run repeatedly
-  
-  //If up button pressed
- if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
- {
-   buttonUpClicked = true;
-   updateValue(currentSelection, true);
- }
-
- if((digitalRead(BUTTON_UP_PIN) == HIGH) && (buttonUpClicked == true))
- {
-   buttonUpClicked = false;
- }
-
-//If down button pressed
- if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
- {
-   buttonDownClicked = true;
-   updateValue(currentSelection, false);
-   
- }
-
- if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
- {
-   buttonDownClicked = false;
-
- }
-
-  //If row button pressed
- if((digitalRead(BUTTON_ROW_PIN) == LOW) && (buttonRowClicked == false))
- {
-   buttonRowClicked = true;
-   //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
-   if(currentRow == 0)
-   {currentRow = 1;}
-   else if (currentRow == 1)
-   {currentRow = 0;}
-   updateSelection();
- }
-
- if((digitalRead(BUTTON_ROW_PIN) == HIGH) && (buttonRowClicked == true))
- {
-   buttonRowClicked = false;
- }
- if((digitalRead(BUTTON_LEFT_PIN) == LOW) && (buttonLeftClicked == false))
- { 
-   buttonLeftClicked = true;
-   currentCol--;
-   if(currentCol < 0)
-   {currentCol = maxCol;}
-   updateSelection();
-   
- }
- if((digitalRead(BUTTON_LEFT_PIN) == HIGH) && (buttonLeftClicked == true))
- {
-   buttonLeftClicked = false;
- }
- if((digitalRead(BUTTON_RIGHT_PIN) == LOW) && (buttonRightClicked == false))
- { 
-   buttonRightClicked = true;
-   currentCol++;
-   if(currentCol > maxCol)
-   {currentCol = 0;}
-   updateSelection();
-   
- }
- if((digitalRead(BUTTON_RIGHT_PIN) == HIGH) && (buttonRightClicked == true))
- {
-   buttonRightClicked = false;
- }
-
-//Update display at end of main loop
-updateDisplay();
-
-}
