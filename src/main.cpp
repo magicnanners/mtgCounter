@@ -204,7 +204,7 @@ void loop()
    {
     changeState(2);
    }
-   else
+   else if(gameState == 3)
    {
     changeState(1);
    }
@@ -231,9 +231,9 @@ void loop()
    {
     changeState(2);
    }
-   else
+   else if(gameState == 3)
    {
-    changeState(3);
+    changeState(1);
    }
    
    
