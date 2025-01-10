@@ -8,22 +8,26 @@
   Version 1.1:
   -Added support for 6  input buttons to prep for PCB & expanded menus
   -Implemented highlighted selection blinking!
+  -Implemented game setup
+  -Game now resets with button press on game over screen
+  *Note: this seems inconsistent currently and will be tweaked going forward
 
   TODO:
-  -Add menu to select game parameters
-  -Have game reset after game over
   -Tidy up UI implementation and make it cleaner
   -Add functionality to the MTG Logo as it currently does nothing. Plan to add secrets and such
   -Cleanup code and documentation
 */
+#define DEBUG 0
 
 //Dependencies
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#if DEBUG == 1
 #include "avr8-stub.h"
 #include "app_api.h"
+#endif
 
 //Begin Definitions
 
@@ -50,8 +54,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 //End Defintitions
 
 //Begin Variables
-
-bool debugActive = true;
 
 //Booleans for debounce
 bool buttonDownClicked = false;
@@ -145,13 +147,12 @@ void updateValue(int currentSelection, bool increase);
 
 
 void setup() {
-
+  //Enable debugging if desired
+#if DEBUG == 1
   debug_init();
-  
-  // Intialize serial
-   // Serial.begin(9600);
-   // Serial.println(F("Begin program"));
-   // Serial.println(millis());
+#else
+Serial.begin(9600);
+#endif
 
   //Setup buttons
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
@@ -170,8 +171,10 @@ void setup() {
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    //Serial.println(F("SSD1306 allocation failed"));
+    #if DEBUG == 0
+    Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
+    #endif
   }
   // Show loading screen
   displayLoadingScreen();
@@ -188,10 +191,6 @@ void loop()
  if((digitalRead(BUTTON_INC_PIN) == LOW) && (buttonIncClicked == false))
  {
    buttonIncClicked = true;
-   if(debugActive == true)
-   {
-    //Serial.println(F("Button Inc State"));
-   }
 
    if(gameState == 2)
    {
@@ -231,29 +230,13 @@ void loop()
  if((digitalRead(BUTTON_DEC_PIN) == HIGH) && (buttonDecClicked == true))
  {
    buttonDecClicked = false;
-   /*
-   if(debugActive == true)
-   {
-    Serial.println(F("Button Dec State:"));
-    Serial.println(buttonDecClicked);
-    Serial.println(F("Button Down State:"));
-    Serial.println(buttonDownClicked);
-   }
-   */
-
  }
 
   //If Down button pressed
  if((digitalRead(BUTTON_DOWN_PIN) == LOW) && (buttonDownClicked == false))
  {
    buttonDownClicked = true;
-   /*
-   if(debugActive == true)
-   {
-    Serial.println(F("Button Down State:"));
-    Serial.println(buttonDownClicked);
-   }
-   */
+
    if(gameState == 3)
    {
     changeState(1);
@@ -272,13 +255,6 @@ void loop()
  if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
  {
    buttonDownClicked = false;
-   /*
-   if(debugActive == true)
-   {
-    Serial.println(F("Button Down State:"));
-    Serial.println(buttonDownClicked);
-   }
-   */
  }
  //If Up button pressed
  if((digitalRead(BUTTON_UP_PIN) == LOW) && (buttonUpClicked == false))
@@ -404,13 +380,6 @@ void updateSelection()
     {
       currentSelection = 1;
     }
-    /*
-    if(debugActive == true)
-    {
-      Serial.println(F("Current Selection:"));
-      Serial.println(currentSelection);
-    }
-    */
   }
 
 
@@ -455,38 +424,38 @@ void updateSelection()
 //Display main game screen
 void displayMainGame()
 {
-      display.clearDisplay();
-      display.setTextSize(1);
-      display.setTextColor(SSD1306_WHITE);
-      display.setCursor(2, 2);
-      display.print("P2: ");
-      display.print(c2Dmg);
-      display.print("|");
-      display.setCursor(45, 2);
-      display.print("P3: ");
-      display.print(c3Dmg);
-      display.print("|");
-      display.setCursor(85, 2);
-      display.print("P4: ");
-      display.print(c4Dmg);
-      display.setTextSize(2);
-      display.setCursor(22, 18);
-      display.print(playerLife);
-      display.drawBitmap(1,15, bitmap_icon_heart,16,16,SSD1306_WHITE); 
-      display.drawBitmap(55,15, bitmap_icon_liquid,16,16, SSD1306_WHITE);
-      display.setCursor(75,18);
-      display.print(poisonDmg);
-      display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
-      currentMillis = millis();
-      if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
-      {
-        updateHighlight();
-      }
-      else if (currentMillis - startMillis > (interval * 2))
-      {
-        startMillis = currentMillis;
-      }
-      display.display();
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(2, 2);
+  display.print("P2: ");
+  display.print(c2Dmg);
+  display.print("|");
+  display.setCursor(45, 2);
+  display.print("P3: ");
+  display.print(c3Dmg);
+  display.print("|");
+  display.setCursor(85, 2);
+  display.print("P4: ");
+  display.print(c4Dmg);
+  display.setTextSize(2);
+  display.setCursor(22, 18);
+  display.print(playerLife);
+  display.drawBitmap(1,15, bitmap_icon_heart,16,16,SSD1306_WHITE); 
+  display.drawBitmap(55,15, bitmap_icon_liquid,16,16, SSD1306_WHITE);
+  display.setCursor(75,18);
+  display.print(poisonDmg);
+  display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
+  currentMillis = millis();
+  if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
+  {
+    updateHighlight();
+  }
+  else if (currentMillis - startMillis > (interval * 2))
+  {
+    startMillis = currentMillis;
+  }
+  display.display();
 }
 //Display game over screen
 void displayGameOver()
