@@ -360,6 +360,10 @@ void changeState(int state)
     currentCol = 0;
     currentRow = 0;
     startingLife = 40;
+    c2Dmg = 0;
+    c3Dmg = 0;
+    c4Dmg = 0;
+    poisonDmg = 0;
     currentSelection = 0;
     displayLoadingScreen();
     delay(300);
