@@ -204,6 +204,10 @@ void loop()
    {
     changeState(2);
    }
+   else if (gameState == 3)
+   {
+    changeState(1);
+   }
  }
 
  if((digitalRead(BUTTON_INC_PIN) == HIGH) && (buttonIncClicked == true))
@@ -215,13 +219,21 @@ void loop()
  if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
  {
    buttonDecClicked = true;
-   if(gameState == 3)
-   {
-    changeState(1);
-   }
-   else
+      if(gameState == 2)
    {
     updateValue(currentSelection, false);
+   }
+   else if(gameState == 1 && currentSelection == 0)
+   {
+    updateValue(currentSelection, false);
+   }
+   else if(gameState == 1 && currentSelection == 1)
+   {
+    changeState(2);
+   }
+   else if (gameState == 3)
+   {
+    changeState(1);
    }
    
    
@@ -289,7 +301,7 @@ void loop()
    {currentCol = maxCol;}
    updateSelection();
   }
-  if(gameState == 3)
+  else if(gameState == 3)
   {
     changeState(1);
   }
@@ -308,7 +320,7 @@ void loop()
    {currentCol = 0;}
    updateSelection();
   }
-  if(gameState == 3)
+  else if(gameState == 3)
   {
     changeState(1);
   }
@@ -325,6 +337,9 @@ updateDisplay();
 
 }
 
+//Begin Functions
+
+//Function to change current game state and set variables to their appropriate values
 void changeState(int state)
 {
   gameState = state;
@@ -362,11 +377,18 @@ void changeState(int state)
     delay(300);
     updateDisplay();
   }
+  if (gameState == 3)
+  {
+    maxRow = 0;
+    maxCol = 0;
+    currentCol = 0;
+    currentRow = 0;
+  }
 }
 
+//Function to determine correct selection number based off columns and rows
 void updateSelection()
 {
-  //A Way to update current selection via columns and rows
   //There is likely a smarter way to achieve this but this works for now.
   //You're welcome to try and improve it, I just wanted to get this done haha.
 
@@ -424,6 +446,7 @@ void updateSelection()
 //Display main game screen
 void displayMainGame()
 {
+  //Clear display buffer
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
@@ -446,6 +469,7 @@ void displayMainGame()
   display.setCursor(75,18);
   display.print(poisonDmg);
   display.drawBitmap(100,15,bitmap_MTGLogo,16,16,SSD1306_WHITE);
+  //Check if highlight should be applied to this dispay update
   currentMillis = millis();
   if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
   {
@@ -468,6 +492,7 @@ void displayGameOver()
   display.display();
 }
 
+//Display loading screen
 void displayLoadingScreen()
 {
   display.clearDisplay();
@@ -480,6 +505,7 @@ void displayLoadingScreen()
   display.display();
 }
 
+//Display setup screen
 void displaySetupScreen()
 {
   display.clearDisplay();
@@ -530,10 +556,12 @@ void updateHighlight ()
   {
       if (currentSelection == 0)
       {
+        //Highlight starting life
         display.drawRect(0, 0, 110, 8, SSD1306_WHITE);
       }
       if (currentSelection == 1) 
       {
+        //Highlight continue button
         display.drawRect(0,19,50,8, SSD1306_WHITE);
       }
   }
@@ -574,9 +602,10 @@ void updateHighlight ()
   }
 }
 
-//Logic for updating the correct value based on selection and 
+//Logic for updating the correct value based on selection and game state
 void updateValue(int currentSelection, bool increase)
 { 
+  //If on setup screen
   if (gameState == 1)
   {
     if(currentSelection == 0)
@@ -600,6 +629,7 @@ void updateValue(int currentSelection, bool increase)
     }
   }
 
+  //if on main screen
   if(gameState == 2)
   {
     if (currentSelection == 0)
