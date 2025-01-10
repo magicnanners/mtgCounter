@@ -357,7 +357,7 @@ void changeState(int state)
     poisonDmg = 0;
     currentSelection = 0;
     displayLoadingScreen();
-    delay(300);
+    //delay(300);
     updateDisplay();
   }
   //If changing to main game
@@ -546,7 +546,7 @@ void updateDisplay()
   }
   if (isGameOver() == true)
   {
-    delay(400);
+    delay(200);
     gameState = 3;
     displayGameOver();
   }
