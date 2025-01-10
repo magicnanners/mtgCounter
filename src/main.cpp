@@ -204,7 +204,7 @@ void loop()
    {
     changeState(2);
    }
-   else if (gameState == 3)
+   else
    {
     changeState(1);
    }
@@ -219,7 +219,7 @@ void loop()
  if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
  {
    buttonDecClicked = true;
-      if(gameState == 2)
+   if(gameState == 2)
    {
     updateValue(currentSelection, false);
    }
@@ -231,9 +231,9 @@ void loop()
    {
     changeState(2);
    }
-   else if (gameState == 3)
+   else
    {
-    changeState(1);
+    changeState(3);
    }
    
    
@@ -383,6 +383,7 @@ void changeState(int state)
     maxCol = 0;
     currentCol = 0;
     currentRow = 0;
+    currentSelection = 0;
   }
 }
 
@@ -438,6 +439,10 @@ void updateSelection()
       //Set Current Selection to Poison Damage
       currentSelection = 5;
     }
+  }
+  if(gameState == 3)
+  {
+    changeState(1);
   }
 }
 
