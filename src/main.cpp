@@ -324,8 +324,6 @@ void loop()
   {
     changeState(1);
   }
-
-   
  }
  if((digitalRead(BUTTON_RIGHT_PIN) == HIGH) && (buttonRightClicked == true))
  {
@@ -334,7 +332,6 @@ void loop()
 
 //Update display at end of main loop
 updateDisplay();
-
 }
 
 //Begin Functions
@@ -404,7 +401,6 @@ void updateSelection()
       currentSelection = 1;
     }
   }
-
 
   if(gameState == 2)
   {
@@ -514,12 +510,16 @@ void displayLoadingScreen()
 void displaySetupScreen()
 {
   display.clearDisplay();
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(2, 2);
-  display.print("Starting Life: ");
+  //display.setCursor(2, 2);
+  //display.print("Starting Life: ");
+  //display.print(startingLife);
+  display.setCursor(22, 0);
+  display.print("SL: ");
   display.print(startingLife);
-  display.setCursor(2, 19);
+  display.drawBitmap(1,0, bitmap_icon_heart,16,16,SSD1306_WHITE); 
+  display.setCursor(2, 17);
   display.print("Confirm");
   currentMillis = millis();
   if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
@@ -562,12 +562,12 @@ void updateHighlight ()
       if (currentSelection == 0)
       {
         //Highlight starting life
-        display.drawRect(0, 0, 110, 8, SSD1306_WHITE);
+        display.drawRect(0, 0, 95, 16, SSD1306_WHITE);
       }
       if (currentSelection == 1) 
       {
         //Highlight continue button
-        display.drawRect(0,19,50,8, SSD1306_WHITE);
+        display.drawRect(0,16,90,16, SSD1306_WHITE);
       }
   }
 
