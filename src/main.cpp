@@ -68,7 +68,6 @@ int c2Dmg;
 int c3Dmg;
 int c4Dmg;
 
-int numPlayers = 4;
 int startingLife = 40;
 
 //Setup variables for menu
@@ -217,28 +216,15 @@ void loop()
  if((digitalRead(BUTTON_DEC_PIN) == LOW) && (buttonDecClicked == false))
  {
    buttonDecClicked = true;
-   /*
-   if(debugActive == true)
+   if(gameState == 3)
    {
-      Serial.println(F("Button Dec State:"));
-      Serial.println(buttonDecClicked);
-      Serial.println(F("Button Down State:"));
-      Serial.println(buttonDownClicked);
+    changeState(1);
    }
-   if(gameState == 2)
+   else
    {
     updateValue(currentSelection, false);
    }
-   else if(gameState == 1 && currentSelection == 0)
-   {
-    updateValue(currentSelection, false);
-   }
-   else if(gameState == 1 && currentSelection == 1)
-   {
-    changeState(2);
-   }
-   */
-   updateValue(currentSelection, false);
+   
    
  }
 
@@ -268,12 +254,19 @@ void loop()
     Serial.println(buttonDownClicked);
    }
    */
-   //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
-   if(currentRow == 0)
-   {currentRow = 1;}
-   else if (currentRow == 1)
-   {currentRow = 0;}
-   updateSelection();
+   if(gameState == 3)
+   {
+    changeState(1);
+   }
+   else
+   {
+     //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
+    if(currentRow == 0)
+    {currentRow = 1;}
+    else if (currentRow == 1)
+    {currentRow = 0;}
+    updateSelection();
+   }
  }
 
  if((digitalRead(BUTTON_DOWN_PIN) == HIGH) && (buttonDownClicked == true))
@@ -292,11 +285,18 @@ void loop()
  {
    buttonUpClicked = true;
    //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
-  if(currentRow == 0)
-  {currentRow = 1;}
-  else if (currentRow == 1)
-  {currentRow = 0;}
-  updateSelection();
+  if(gameState == 3)
+  {
+    changeState(1);
+  }
+  else
+  {
+   if(currentRow == 0)
+   {currentRow = 1;}
+   else if (currentRow == 1)
+   {currentRow = 0;}
+   updateSelection();
+  }
  }
 
  if((digitalRead(BUTTON_UP_PIN) == HIGH) && (buttonUpClicked == true))
@@ -313,6 +313,10 @@ void loop()
    {currentCol = maxCol;}
    updateSelection();
   }
+  if(gameState == 3)
+  {
+    changeState(1);
+  }
  }
  if((digitalRead(BUTTON_LEFT_PIN) == HIGH) && (buttonLeftClicked == true))
  {
@@ -327,6 +331,10 @@ void loop()
    if(currentCol > maxCol)
    {currentCol = 0;}
    updateSelection();
+  }
+  if(gameState == 3)
+  {
+    changeState(1);
   }
 
    
@@ -351,6 +359,11 @@ void changeState(int state)
     maxCol = 0;
     currentCol = 0;
     currentRow = 0;
+    startingLife = 40;
+    currentSelection = 0;
+    displayLoadingScreen();
+    delay(300);
+    updateDisplay();
   }
   //If changing to main game
   if (gameState == 2)
