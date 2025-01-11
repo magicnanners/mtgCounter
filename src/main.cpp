@@ -757,7 +757,7 @@ void updateValue(int currentSelection, bool increase)
     }
     else if(currentSelection == 4)
     {
-      //Do nothing... for now ;)
+      //Display secret screens
       if(increase == true)
       {
         displaySecretIncScreen();
