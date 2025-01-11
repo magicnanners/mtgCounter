@@ -13,8 +13,7 @@
   *Note: this seems inconsistent currently and will be tweaked going forward
   -Added secret screens to mtg logo
 
-  TODO:
-  -Tidy up UI implementation and make it cleaner
+  TODO: Add way to undo game over. 
 */
 #define DEBUG 0
 
@@ -585,7 +584,6 @@ void updateDisplay()
   }
   if (isGameOver() == true)
   {
-    delay(200);
     gameState = 3;
     displayGameOver();
   }
@@ -626,12 +624,12 @@ void updateHighlight ()
     else if(currentSelection == 2)
     {
       //Highlight Commander 3 Damage
-      display.drawRect(45,0,40,10,SSD1306_WHITE);
+      display.drawRect(42,0,40,10,SSD1306_WHITE);
     }
     else if(currentSelection == 3)
     {
       //Highlight Commander 4 Damage
-      display.drawRect(85,0,40,10,SSD1306_WHITE);
+      display.drawRect(82,0,40,10,SSD1306_WHITE);
     }
     else if(currentSelection == 4)
     {
