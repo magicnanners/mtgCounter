@@ -141,6 +141,8 @@ void displayMainGame();
 void displayGameOver();
 void displayLoadingScreen();
 void displaySetupScreen();
+void displaySecretIncScreen();
+void displaySecretDecScreen();
 void updateDisplay();
 void updateHighlight();
 void updateValue(int currentSelection, bool increase);
@@ -528,6 +530,19 @@ void displaySetupScreen()
     startMillis = currentMillis;
   }
   display.display();
+}
+
+//Display "secret" screen INC
+void displaySecretIncScreen()
+{
+  display.clearDisplay();
+  
+}
+
+//Display "secret" screen DEC
+void displaySecretDecScreen()
+{
+
 }
 
 //Function to update the screen
