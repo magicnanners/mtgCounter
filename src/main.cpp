@@ -512,14 +512,11 @@ void displaySetupScreen()
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  //display.setCursor(2, 2);
-  //display.print("Starting Life: ");
-  //display.print(startingLife);
-  display.setCursor(22, 0);
+  display.setCursor(38, 0);
   display.print("SL: ");
   display.print(startingLife);
-  display.drawBitmap(1,0, bitmap_icon_heart,16,16,SSD1306_WHITE); 
-  display.setCursor(2, 17);
+  display.drawBitmap(17,0, bitmap_icon_heart,16,16,SSD1306_WHITE); 
+  display.setCursor(22, 16);
   display.print("Confirm");
   currentMillis = millis();
   if ((currentMillis - startMillis >= interval) && (currentMillis - startMillis < interval * 2))
@@ -562,12 +559,12 @@ void updateHighlight ()
       if (currentSelection == 0)
       {
         //Highlight starting life
-        display.drawRect(0, 0, 95, 16, SSD1306_WHITE);
+        display.drawRect(0, 0, 128, 16, SSD1306_WHITE);
       }
       if (currentSelection == 1) 
       {
         //Highlight continue button
-        display.drawRect(0,16,90,16, SSD1306_WHITE);
+        display.drawRect(0,16,128,16, SSD1306_WHITE);
       }
   }
 
