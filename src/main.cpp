@@ -11,11 +11,10 @@
   -Implemented game setup
   -Game now resets with button press on game over screen
   *Note: this seems inconsistent currently and will be tweaked going forward
+  -Added secret screens to mtg logo
 
   TODO:
   -Tidy up UI implementation and make it cleaner
-  -Add functionality to the MTG Logo as it currently does nothing. Plan to add secrets and such
-  -Cleanup code and documentation
 */
 #define DEBUG 0
 
