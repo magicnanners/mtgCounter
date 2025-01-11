@@ -536,13 +536,41 @@ void displaySetupScreen()
 void displaySecretIncScreen()
 {
   display.clearDisplay();
-  
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.println("Shoutout to the");
+  display.println("bestest boy Cosmo");
+  display.drawBitmap(48,16,bitmap_icon_heart,16,16,SSD1306_WHITE);
+  display.display();
+  delay(2000);
 }
 
 //Display "secret" screen DEC
 void displaySecretDecScreen()
 {
+  display.clearDisplay();
+  display.setTextSize(2); // Draw 2X-scale text
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("Ur Gay"));
+  display.display();      // Show initial text
+  delay(100);
 
+  // Scroll in various directions, pausing in-between:
+  display.startscrollright(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrollleft(0x00, 0x0F);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
+  display.startscrolldiagright(0x00, 0x07);
+  delay(2000);
+  display.startscrolldiagleft(0x00, 0x07);
+  delay(2000);
+  display.stopscroll();
+  delay(1000);
 }
 
 //Function to update the screen
@@ -730,6 +758,14 @@ void updateValue(int currentSelection, bool increase)
     else if(currentSelection == 4)
     {
       //Do nothing... for now ;)
+      if(increase == true)
+      {
+        displaySecretIncScreen();
+      }
+      else
+      {
+        displaySecretDecScreen();
+      }
     }
     else if(currentSelection == 5)
     {
