@@ -15,17 +15,13 @@
 
   TODO: Add way to undo game over. 
 */
-#define DEBUG 0
 
 //Dependencies
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#if DEBUG == 1
-#include "avr8-stub.h"
-#include "app_api.h"
-#endif
+
 
 //Begin Definitions
 
@@ -148,11 +144,7 @@ void updateValue(int currentSelection, bool increase);
 
 void setup() {
   //Enable debugging if desired
-#if DEBUG == 1
-  debug_init();
-#else
 Serial.begin(9600);
-#endif
 
   //Setup buttons
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
