@@ -541,7 +541,7 @@ void displaySecretDecScreen()
   display.clearDisplay();
   display.setTextSize(2); // Draw 2X-scale text
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
+  display.setCursor(0x00, 0x0F);
   display.println(F("Ur Gay"));
   display.display();      // Show initial text
   delay(100);
