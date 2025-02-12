@@ -87,6 +87,13 @@ unsigned long startMillis;
 unsigned long currentMillis;
 const long interval = 300;
 
+//Variables for tracking last state
+int lastPlayerLife;
+int lastPoisonDmg;
+int lastC2Dmg;
+int lastC3Dmg;
+int lastC4Dmg;
+
 //Boolean for determining game over
 bool isGameOver()
 {  
@@ -140,6 +147,8 @@ void displaySecretDecScreen();
 void updateDisplay();
 void updateHighlight();
 void updateValue(int currentSelection, bool increase);
+void saveLastValues();
+void undoGameOver();
 
 
 void setup() {
@@ -221,11 +230,11 @@ void loop()
    }
    else if(gameState == 1 && currentSelection == 1)
    {
-    changeState(2);
+    changeState(2,false);
    }
    else if(gameState == 3)
    {
-    changeState(1);
+    changeState(1,true);
    }
    
    
@@ -243,7 +252,7 @@ void loop()
 
    if(gameState == 3)
    {
-    changeState(1);
+    changeState(1,false);
    }
    else
    {
@@ -267,7 +276,7 @@ void loop()
    //Note: This is ugly but it works will have to tweak this for instances with more than 2 rows
   if(gameState == 3)
   {
-    changeState(1);
+    changeState(1,false);
   }
   else
   {
@@ -295,7 +304,7 @@ void loop()
   }
   else if(gameState == 3)
   {
-    changeState(1);
+    changeState(1,false);
   }
  }
  if((digitalRead(BUTTON_LEFT_PIN) == HIGH) && (buttonLeftClicked == true))
@@ -314,7 +323,7 @@ void loop()
   }
   else if(gameState == 3)
   {
-    changeState(1);
+    changeState(1,false);
   }
  }
  if((digitalRead(BUTTON_RIGHT_PIN) == HIGH) && (buttonRightClicked == true))
@@ -329,7 +338,7 @@ updateDisplay();
 //Begin Functions
 
 //Function to change current game state and set variables to their appropriate values
-void changeState(int state)
+void changeState(int state, bool undo)
 {
   gameState = state;
   //If changing to setup screen
@@ -349,8 +358,8 @@ void changeState(int state)
     //delay(300);
     updateDisplay();
   }
-  //If changing to main game
-  if (gameState == 2)
+  //If changing to main game but not undoing game over
+  if (gameState == 2 && undo == false)
   {
     maxRow = 1;
     maxCol = 2;
@@ -362,6 +371,17 @@ void changeState(int state)
     c4Dmg = 0;
     poisonDmg = 0;
     currentSelection = 0;
+    displayLoadingScreen();
+    delay(300);
+    updateDisplay();
+  }
+  if(gameState == 2 && undo == true)
+  {
+    maxRow = 1;
+    maxCol = 2;
+    currentCol = 0;
+    currentRow = 0;
+    undoGameOver();
     displayLoadingScreen();
     delay(300);
     updateDisplay();
@@ -430,7 +450,7 @@ void updateSelection()
   }
   if(gameState == 3)
   {
-    changeState(1);
+    changeState(1,false);
   }
 }
 
@@ -666,6 +686,9 @@ void updateValue(int currentSelection, bool increase)
   //if on main screen
   if(gameState == 2)
   {
+    //Save a copy of the current values for game over undo
+    saveLastValues();
+
     if (currentSelection == 0)
     {
       //Update Player Life
@@ -778,5 +801,22 @@ void updateValue(int currentSelection, bool increase)
       }
     }
   } 
+}
+void saveLastValues()
+{
+  lastPlayerLife = playerLife;
+  lastC2Dmg = c2Dmg;
+  lastC3Dmg = c3Dmg;
+  lastC4Dmg = c4Dmg;
+  lastPoisonDmg = poisonDmg;
+}
+
+void undoGameOver()
+{
+  playerLife = lastPlayerLife;
+  c2Dmg = lastC2Dmg;
+  c3Dmg = lastC3Dmg;
+  c4Dmg = lastC4Dmg;
+  poisonDmg = lastPoisonDmg;
 }
 
