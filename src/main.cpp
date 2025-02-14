@@ -136,7 +136,7 @@ const unsigned char bitmap_MTGLogo [] PROGMEM = {
 // End Bitmaps
 
 //Function Declarations
-void changeState(int state);
+void changeState(int state, bool undo);
 void updateSelection();
 void displayMainGame();
 void displayGameOver();
@@ -181,7 +181,7 @@ Serial.begin(9600);
   displayLoadingScreen();
   delay(1000); // Pause for 1 second
   startMillis = millis();
-  changeState(1);
+  changeState(1,false);
 }
 
 void loop()
@@ -203,11 +203,11 @@ void loop()
    }
    else if(gameState == 1 && currentSelection == 1)
    {
-    changeState(2);
+    changeState(2,false);
    }
    else if(gameState == 3)
    {
-    changeState(1);
+    changeState(1,false);
    }
  }
 
@@ -679,7 +679,7 @@ void updateValue(int currentSelection, bool increase)
     }
     else if (currentSelection == 1)
     {
-      changeState(2);
+      changeState(2,false);
     }
   }
 
